@@ -1,5 +1,7 @@
 // import React from "react";
 import React, { useState } from "react";
+
+// all compoents here ================================================================================
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar"; // Navbar Component
 import Header from "./components/Header"; // Header Component
@@ -12,11 +14,10 @@ import EditProfile from './components/EditProfile';
 import SubmitArticle from './components/SubmitArticle';
 import SubmittedArticle from './components/SubmittedArticles';
 import AuthorDetails from './components/AuthorDetails';
-
-
+import GuidelinesForAuthors from './components/GuidelinesForAuthors';
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-// Import Page Components
+// Import Page Components===============================================================================
 import HomePage from "./pages/HomePage";
 import GeneralPolicy from "./pages/GeneralPolicy";
 import EditorialBoard from "./pages/EditorialBoard";
@@ -94,6 +95,7 @@ const App = () => {
               <Route path="/submitted-article" element={<SubmittedArticle/>}/>
               <Route path="/author-details/:paperId" element={<AuthorDetails />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/guide-for-authors" element={<GuidelinesForAuthors/>}/>
               {/* Add other routes */}
             </Routes>
           </div>

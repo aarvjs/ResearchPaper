@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const InfoForAuthors = () => {
+  const navigate = useNavigate();
+
   const containerStyle = {
     padding: '15px',
     maxWidth: '1000px',
@@ -23,10 +26,10 @@ const InfoForAuthors = () => {
 
   const topSectionStyle = {
     ...sectionStyle,
-    border: '2px solid #4CAF50', // Green border on all sides
-    borderRadius: '8px', // Border radius for rounded corners
-    padding: '15px', // Ensure padding inside the border
-    backgroundColor: '#f4f9f4', // Light background to highlight the top section
+    border: '2px solid #4CAF50',
+    borderRadius: '8px',
+    padding: '15px',
+    backgroundColor: '#f4f9f4',
   };
 
   const paragraphStyle = {
@@ -36,9 +39,14 @@ const InfoForAuthors = () => {
     marginBottom: '12px',
   };
 
+  const linkStyle = {
+    color: '#4CAF50',
+    textDecoration: 'none',
+    fontWeight: 'bold',
+  };
+
   return (
     <div style={containerStyle}>
-      {/* Top section with border on all sides */}
       <div style={topSectionStyle}>
         <h2 style={sectionTitleStyle}>A new version of the KJM article style</h2>
         <p style={paragraphStyle}>
@@ -46,7 +54,6 @@ const InfoForAuthors = () => {
         </p>
       </div>
 
-      {/* Other sections without borders */}
       <div style={sectionStyle}>
         <h2 style={sectionTitleStyle}>About Polymathia, Multidisciplinary Journal</h2>
         <p style={paragraphStyle}>
@@ -75,6 +82,29 @@ const InfoForAuthors = () => {
         <p style={paragraphStyle}>
           All papers are refereed.
         </p>
+        <p style={paragraphStyle}>
+          When preparing the manuscript, please read the following instructions:<br />
+          - <a 
+              href="/guide-for-authors" 
+              style={linkStyle}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/guide-for-authors');
+              }}
+            >
+              Guide for Authors
+            </a><br />
+          - <a 
+              href="/preparation-files" 
+              style={linkStyle}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/preparation-files');
+              }}
+            >
+              Preparation files
+            </a>
+        </p>
       </div>
 
       <div style={sectionStyle}>
@@ -87,4 +117,4 @@ const InfoForAuthors = () => {
   );
 };
 
-export default InfoForAuthors;
+export default InfoForAuthors;
