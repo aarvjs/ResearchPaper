@@ -57,12 +57,17 @@ app.post('/register', async (req, res) => {
 });
 
 // Login API===================================================================22222222222222222222222222222
+
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
   const sql = 'SELECT * FROM users WHERE username = ?';
+
+  // Pehle users table check hoga
   db.query(sql, [username], async (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
+
     if (result.length > 0) {
+      // User found in users table
       const user = result[0];
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
@@ -70,16 +75,35 @@ app.post('/login', (req, res) => {
         res.status(200).json({
           message: 'Login successful',
           token,
-          user: { fullName: `${user.firstName} ${user.lastName}`, username: user.username },
+          user: { fullName: `${user.firstName} ${user.lastName}`, username: user.username, isAdmin: false },
         });
       } else {
         res.status(401).json({ message: 'Invalid credentials' });
       }
     } else {
-      res.status(401).json({ message: 'Invalid credentials' });
+      // Agar user table me nahi mila toh admin table check hoga=============================================
+      const adminSql = 'SELECT * FROM admin WHERE username = ? AND password = ?';
+      db.query(adminSql, [username, password], (err, adminResult) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        if (adminResult.length > 0) {
+          // Admin found
+          const admin = adminResult[0];
+          const token = jwt.sign({ id: admin.id, username: admin.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+          res.status(200).json({
+            message: 'Admin login successful',
+            token,
+            user: { username: admin.username, isAdmin: true },
+          });
+        } else {
+          res.status(401).json({ message: 'Invalid credentials' });
+        }
+      });
     }
   });
 });
+
+
 
 // Fetch Profile API===========================================================333333333333333333333333
 app.get('/profile', verifyToken, (req, res) => {

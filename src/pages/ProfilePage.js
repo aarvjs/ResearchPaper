@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import ProfileImg from "../images/ProfileImg.png"; // Your image path
 import SubmitIcon from "../images/SubmitIcon.png"; 
@@ -6,6 +6,16 @@ import ArticlesIcon from "../images/ArticlesIcon.png";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    } else {
+      navigate('/');
+    }
+  }, [navigate]);
 
   const navigateTo = (path) => {
     navigate(path);
@@ -69,6 +79,29 @@ const ProfilePage = () => {
             <button style={styles.button}>View Articles</button>
           </div>
         </div>
+        {/* here admin card lgao ++++++++++++++++++++++++++++++++++++++++++++++++++++++++========================================== */}
+        {user?.isAdmin && (
+         <div
+         style={{ ...styles.card }}
+         onClick={() => navigateTo("/admin-papers")}
+       >
+         <div style={styles.imageSection}>
+           <img
+             src={ArticlesIcon}
+             alt="Submitted Articles"
+             style={styles.image}
+           />
+         </div>
+         <div style={styles.cardContent}>
+           <div style={styles.cardTitle}>Admin Panel</div>
+           <div style={styles.cardDescription}>
+           Check and manage research papers.
+           </div>
+           <button style={styles.button}>View Details</button>
+         </div>
+       </div>
+        
+      )}
       </div>
     </div>
   );

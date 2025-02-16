@@ -13,16 +13,6 @@ const Login = () => {
   const navigate = useNavigate();
 
 
-
-
-  // Check if user is logged in
-  // useEffect(() => {
-  //   const storedUser = JSON.parse(localStorage.getItem('user'));
-  //   if (storedUser) {
-  //     setUser(storedUser);
-  //   }
-  // }, []);
-
    // Check if user is logged in or fetch profile data if not found in localStorage=========================================
    useEffect(() => {
     const storedUser = (() => {
@@ -42,6 +32,9 @@ const Login = () => {
       // navigate('/login'); 
     }
   }, []);
+  
+     // Check if user is logged in or fetch profile data if not found in localStorage=========================================
+
   
   const fetchProfileData = async () => {
     try {
@@ -162,10 +155,10 @@ const Login = () => {
     },
   };
 
-  // Handle Login Submission
+  // Handle Login Submission=================================================================================
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     try {
       const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
@@ -174,9 +167,9 @@ const Login = () => {
         },
         body: JSON.stringify({ username, password }),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.status === 200) {
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
@@ -190,6 +183,7 @@ const Login = () => {
       alert('Something went wrong. Please try again later.');
     }
   };
+  
 
   // Handle Logout
   const handleLogout = () => {

@@ -27,6 +27,7 @@ import AcceptedPapers from "./pages/AcceptedPapers";
 import OnlineSubmission from "./pages/OnlineSubmission";
 import ContactPage from "./pages/ContactPage";
 import ProfilePage from './pages/ProfilePage';
+import AdminPapers from './pages/AdminPapers';
 
 
 const App = () => {
@@ -90,12 +91,13 @@ const App = () => {
               <Route path="/accepted-papers" element={< AcceptedPapers/>}/>
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/profile-page" element={<ProfilePage />} />
-              <Route path="/edit-profile" element={<EditProfile />} />       // here are profile page 
+              <Route path="/edit-profile" element={<EditProfile />} />       
               <Route path="/submit-article" element={<SubmitArticle />}/>
               <Route path="/submitted-article" element={<SubmittedArticle/>}/>
               <Route path="/author-details/:paperId" element={<AuthorDetails />} />
               <Route path="/register" element={<Register />} />
               <Route path="/guide-for-authors" element={<GuidelinesForAuthors/>}/>
+              <Route path="/admin-papers" element={<AdminPapers/>}/>
               {/* Add other routes */}
             </Routes>
           </div>
