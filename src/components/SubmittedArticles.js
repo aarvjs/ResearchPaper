@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import { Link } from 'react-router-dom';
 
 const SubmittedArticle = () => {
   const [papers, setPapers] = useState([]);
@@ -22,6 +22,35 @@ const SubmittedArticle = () => {
       });
   }, []);
 
+
+  const downloadFile = async (paperId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/download-attachment/${paperId}`);
+      if (!response.ok) throw new Error("File not found!");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `attachment_${paperId}.pdf`; 
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
+
+  const viewFile = (attachmentPath) => {
+    if (attachmentPath) {
+      window.open(`http://localhost:5000/${attachmentPath}`, "_blank");
+    } else {
+      alert("No attachment found!");
+    }
+  };
+
+  
+
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', backgroundColor: '#f9f9f9' }}>
       <h2 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>Research Papers</h2>
@@ -42,8 +71,9 @@ const SubmittedArticle = () => {
           <tr style={{ backgroundColor: '#007BFF', color: '#fff', textAlign: 'left' }}>
             <th style={{ padding: '10px', border: '1px solid #ddd' }}>ID</th>
             <th style={{ padding: '10px', border: '1px solid #ddd' }}>Title</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Author</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Created At</th>
+            <th style={{ padding: '10px', border: '1px solid #ddd' }}>MSC Code</th>
+            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Suggested Editors</th>
+            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Submission Time</th>
           </tr>
         </thead>
         <tbody>
@@ -68,16 +98,17 @@ const SubmittedArticle = () => {
                     {paper.title}
                   </Link>
                 </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{paper.author}</td>
+                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{paper.msccode}</td>
+                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{paper.suggestedEditors}</td>
                 <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                  {new Date(paper.created_at).toLocaleDateString()}
+                  {new Date(paper.submission_time).toLocaleString()}
                 </td>
               </tr>
             ))
           ) : (
             <tr>
               <td
-                colSpan="4"
+                colSpan="5"
                 style={{
                   padding: '10px',
                   border: '1px solid #ddd',
@@ -91,6 +122,57 @@ const SubmittedArticle = () => {
           )}
         </tbody>
       </table>
+
+      <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+  <ul style={{ listStyle: "none", padding: "0" }}>
+    {papers.map((paper) => (
+      <li
+        key={paper.id}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          backgroundColor: "#f9f9f9",
+          padding: "10px",
+          marginBottom: "10px",
+          borderRadius: "5px",
+          boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <strong style={{ flex: 1 }}>{paper.title}</strong>
+        <button
+          style={{
+            backgroundColor: "#007bff",
+            color: "#fff",
+            border: "none",
+            padding: "5px 10px",
+            marginLeft: "10px",
+            borderRadius: "3px",
+            cursor: "pointer",
+          }}
+          onClick={() => downloadFile(paper.id)}
+        >
+          Download
+        </button>
+        <button
+          style={{
+            backgroundColor: "#28a745",
+            color: "#fff",
+            border: "none",
+            padding: "5px 10px",
+            marginLeft: "10px",
+            borderRadius: "3px",
+            cursor: "pointer",
+          }}
+          onClick={() => viewFile(paper.attachmentPath)}
+        >
+          View
+        </button>
+      </li>
+    ))}
+  </ul>
+</div>
+
     </div>
   );
 };

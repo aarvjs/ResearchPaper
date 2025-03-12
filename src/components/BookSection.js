@@ -1,5 +1,5 @@
 import React from 'react';
-import book from '../images/book.jpg'; // Import image
+import book from '../images/SchoolLogo1.png'; // Import image
 
 function BookSection() {
   return (
@@ -35,8 +35,8 @@ function BookSection() {
         src={book} 
         alt="Book Cover" 
         style={{ 
-          width: '60%',
-          height:'35vh', // Reduced image size
+          width: '92%',
+          height:'37vh', // Reduced image size
           borderRadius: '6px', // Rounded corners for the image
         }} 
       />

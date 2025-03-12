@@ -98,7 +98,7 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/guide-for-authors" element={<GuidelinesForAuthors/>}/>
               <Route path="/admin-papers" element={<AdminPapers/>}/>
-              {/* Add other routes */}
+              {/* Add other routes =======================================================================*/}
             </Routes>
           </div>
 

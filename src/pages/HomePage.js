@@ -98,7 +98,7 @@ function Home() {
   </li><br></br>
   <li>
     <a
-      href="https://www.scopus.com/home.uri"
+      href=""
       style={{
         color: "green",
         textDecoration: "none",

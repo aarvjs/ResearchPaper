@@ -1,83 +1,165 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const AuthorDetails = () => {
-  const { paperId } = useParams(); // Get the paper ID from the URL
+  const { paperId } = useParams();
   const [authors, setAuthors] = useState([]);
+  const [paperTitle, setPaperTitle] = useState("Loading...");
+  // const [editor, setEditor] = useState("Loading...");
+  // const [submissionTime, setSubmissionTime] = useState("Loading...");
+  // const [attachments, setAttachments] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    fetch(`http://localhost:5000/get-paper/${paperId}`)
+      .then((res) => res.json())
+      .then((data) => setPaperTitle(data.title || "No Title Found"))
+      .catch(() => setPaperTitle("Error fetching title"));
+
+    // fetch(`http://localhost:5000/get-paper-details/${paperId}`)
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     setEditor(data.editor || "Not Assigned");
+    //     setSubmissionTime(data.submissionTime || "Unknown");
+    //     setAttachments(data.attachments || []);
+    //   })
+    //   .catch(() => setError("Error fetching paper details"));
+
     fetch(`http://localhost:5000/get-authors/${paperId}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setAuthors(data);
-      })
-      .catch((error) => {
-        setError(error.message);
-        console.error('Error fetching authors:', error);
-      });
-  }, [paperId]); // Re-run the effect when paperId changes
+      .then((res) => res.json())
+      .then((data) => setAuthors(data))
+      .catch(() => setError("Error fetching authors"));
+  }, [paperId]);
+  
 
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', backgroundColor: '#f9f9f9' }}>
-      <h2 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>Author Details</h2>
-      {error && (
-        <p style={{ color: 'red', textAlign: 'center', marginBottom: '20px' }}>
-          Error: {error}
-        </p>
-      )}
-      <table
-        style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-          backgroundColor: '#fff',
-        }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: '#007BFF', color: '#fff', textAlign: 'left' }}>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Author ID</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>First Name</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Last Name</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Institution</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Email</th>
-          </tr>
-        </thead>
-        <tbody>
-          {authors.length > 0 ? (
-            authors.map((author) => (
-              <tr key={author.id}>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{author.id}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{author.first_name}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{author.last_name}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{author.institution}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{author.email}</td>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>{paperTitle}</h2>
+        <h3 style={styles.subTitle}>Author Details</h3>
+        {error && <p style={styles.error}>{error}</p>}
+
+        <table style={styles.table}>
+          <thead>
+            <tr style={styles.tableHeader}>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Institution</th>
+              <th>Email</th>
+              <th>ORCID</th>
+              <th>Address</th>
+              <th>Country</th>
+            </tr>
+          </thead>
+          <tbody>
+            {authors.length > 0 ? (
+              authors.map((author) => (
+                <tr key={author.id} style={styles.tableRow}>
+                  <td>{author.id}</td>
+                  <td>{`${author.title} ${author.firstName} ${author.middleName || ""} ${author.lastName}`}</td>
+                  <td>{author.institution}</td>
+                  <td>{author.email}</td>
+                  <td>{author.orcid || "-"}</td>
+                  <td>{author.address}</td>
+                  <td>{author.country}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" style={styles.noData}>No authors available</td>
               </tr>
+            )}
+          </tbody>
+        </table>
+
+        {/* <div style={styles.detailsBox}>
+          <h3 style={styles.boxTitle}>Editor</h3>
+          <p>{editor}</p>
+
+          <h3 style={styles.boxTitle}>Submission Time</h3>
+          <p>{submissionTime}</p>
+
+          <h3 style={styles.boxTitle}>Attachments</h3>
+          {attachments.length > 0 ? (
+            attachments.map((file, index) => (
+              <p key={index}>
+                <a href={file.url} target="_blank" rel="noopener noreferrer">
+                  {file.name}
+                </a>
+              </p>
             ))
           ) : (
-            <tr>
-              <td
-                colSpan="5"
-                style={{
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  textAlign: 'center',
-                  color: '#666',
-                }}
-              >
-                No authors available
-              </td>
-            </tr>
+            <p>No attachments available</p>
           )}
-        </tbody>
-      </table>
+        </div> */}
+      </div>
     </div>
   );
+};
+
+const styles = {
+  container: {
+    fontFamily: "Arial, sans-serif",
+    display: "flex",
+    justifyContent: "center",
+    padding: "20px",
+    // backgroundColor: "#f4f4f4",
+    minHeight: "100vh",
+  },
+  card: {
+    width: "100%",
+    // maxWidth: "1100px",
+    backgroundColor: "#fff",
+    padding: "20px",
+    // borderRadius: "10px",
+    // boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+    textAlign: "center",
+    border: "2px solid #007BFF",
+  },
+  title: {
+    color: "#007BFF",
+    fontSize: "24px",
+    marginBottom: "15px",
+  },
+  subTitle: {
+    color: "#333",
+    fontSize: "18px",
+    marginBottom: "10px",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: "14px",
+    backgroundColor: "#fff",
+    border: "1px solid #ddd",
+  },
+  tableHeader: {
+    backgroundColor: "#007BFF",
+    color: "#fff",
+    textAlign: "left",
+    padding: "10px",
+  },
+  tableRow: {
+    borderBottom: "1px solid #ddd",
+  },
+  noData: {
+    textAlign: "center",
+    padding: "10px",
+    color: "#888",
+  },
+  detailsBox: {
+    marginTop: "20px",
+    padding: "15px",
+    backgroundColor: "#f9f9f9",
+    borderRadius: "8px",
+    textAlign: "left",
+    border: "1px solid #ddd",
+  },
+  boxTitle: {
+    fontSize: "16px",
+    fontWeight: "bold",
+    marginTop: "10px",
+  },
 };
 
 export default AuthorDetails;

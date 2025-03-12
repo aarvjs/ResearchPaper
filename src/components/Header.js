@@ -12,7 +12,7 @@ const Header = () => {
           Polymathia, Multidisciplinary Journal
         </a>
       </h1>
-      <small className="small-text">Faculty of Science</small>
+      {/* <small className="small-text">Faculty of Science</small> */}
     </header>
   );
 };

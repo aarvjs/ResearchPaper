@@ -157,48 +157,209 @@ app.put('/edit-profile', verifyToken, (req, res) => {
   });
 });
 
-// Configure Multer for File Upload============================================
+// research papers submiyt hgereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, 'uploads')); // Folder for file uploads
+    cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Unique file name
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 const upload = multer({ storage });
 
-// API: Submit Research Paper===================================================55555555555555555555555555
+// Create Tables if not exist====================================================
+db.query(`
+  CREATE TABLE IF NOT EXISTS ResearchPapers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    attachmentPath VARCHAR(255),
+    msccode VARCHAR(100),
+    suggestedEditors VARCHAR(255),
+    message TEXT
+  )
+`);
+
+db.query(`
+  CREATE TABLE IF NOT EXISTS Authors (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    researchPaperId INT,
+    title VARCHAR(50),
+    firstName VARCHAR(100) NOT NULL,
+    middleName VARCHAR(100),
+    lastName VARCHAR(100) NOT NULL,
+    gender VARCHAR(20),
+    correspondingAuthor VARCHAR(100),
+    institution VARCHAR(255),
+    email VARCHAR(150) NOT NULL,
+    orcid VARCHAR(100),
+    address TEXT,
+    country VARCHAR(100),
+    FOREIGN KEY (researchPaperId) REFERENCES ResearchPapers(id) ON DELETE CASCADE
+  )
+`);
+
+// API Endpoints
+
+// Submit Research Paper=======================================================================================
 app.post('/submit-paper', upload.single('attachment'), (req, res) => {
-  const { title, msccode, author, additionAuthors, suggestedEditors, message } = req.body;
-  const attachment = req.file ? req.file.path : null; // File path of uploaded file
+  const { title, msccode, suggestedEditors, message } = req.body;
+  const attachmentPath = req.file ? req.file.path : null;
 
-  const query = 'INSERT INTO research_papers (title, msccode, attachment, author, additionAuthors, suggestedEditors, message) VALUES (?, ?, ?, ?, ?, ?, ?)';
-  db.query(query, [title, msccode, attachment, author, additionAuthors, suggestedEditors, message], (err, result) => {
-    if (err) return res.status(500).json({ error: 'Database error', details: err.message });
-    res.status(201).json({ message: 'Paper submitted successfully', paperId: result.insertId });
+  if (!title || !msccode) {
+    return res.status(400).json({ error: 'Title and MSC Code are required!' });
+  }
+
+  const sql = `INSERT INTO ResearchPapers (title, attachmentPath, msccode, suggestedEditors, message) VALUES (?, ?, ?, ?, ?)`;
+  db.query(sql, [title, attachmentPath, msccode, suggestedEditors, message], (err, result) => {
+    if (err) {
+      console.error('Database Error:', err);
+      return res.status(500).json({ error: 'Database error! Please try again later.' });
+    }
+    res.status(201).json({ 
+      message: 'Paper submitted successfully', 
+      paperId: result.insertId 
+    });
   });
 });
 
-// API: Get Submitted Papers====================================================66666666666666666666666666
+// Add Authors==========================================================
+app.post('/add-authors', (req, res) => {
+  const { authors, paperId } = req.body;
+
+  if (!authors || !paperId) {
+    return res.status(400).json({ error: "Missing authors data or paperId" });
+  }
+
+  const values = authors.map(a => [
+    paperId, a.title, a.firstName, a.middleName, a.lastName, a.gender, 
+    a.correspondingAuthor, a.institution, a.email, a.orcid, a.address, a.country
+  ]);
+
+  const sql = `INSERT INTO Authors (researchPaperId, title, firstName, middleName, lastName, gender, correspondingAuthor, institution, email, orcid, address, country) VALUES ?`;
+
+  db.query(sql, [values], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(201).json({ message: 'Authors added successfully', affectedRows: result.affectedRows });
+  });
+});
+
+// Get all research papers=======================================================================
 app.get('/get-papers', (req, res) => {
-  const query = 'SELECT id, title, author, created_at FROM research_papers';
-  db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ error: 'Database error', details: err.message });
-    res.status(200).json(results);
+  const sql = `SELECT id, title, msccode, suggestedEditors, created_at as submission_time FROM ResearchPapers ORDER BY created_at DESC`;
+  
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error!' });
+    }
+    res.json(results);
   });
 });
 
-// API: Get Authors by Paper ID
+// app.get('/get-papers', (req, res) => {
+//   const userId = req.user.id; // Token se user ka ID le rahe hain
+
+//   const sql = `SELECT id, title, msccode, suggestedEditors, created_at as submission_time 
+//                FROM ResearchPapers WHERE user_id = ? ORDER BY created_at DESC`;
+
+//   db.query(sql, [userId], (err, results) => {
+//     if (err) {
+//       console.error('Database error:', err);
+//       return res.status(500).json({ error: 'Database error!' });
+//     }
+//     res.json(results); 
+//   });
+// });
+
+
+// get athors===========================================================================
+
 app.get('/get-authors/:paperId', (req, res) => {
-  const { paperId } = req.params; // Get the paper ID from the URL parameter
+  const { paperId } = req.params;
+  const sql = 'SELECT * FROM Authors WHERE researchPaperId = ?';
   
-  const query = 'SELECT * FROM authors WHERE research_paper_id = ?';
-  db.query(query, [paperId], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Database error', details: err.message });
-    res.status(200).json(results); // Return the list of authors for the paper
+  db.query(sql, [paperId], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
   });
 });
+
+// get title ====================================================================================
+app.get('/get-paper/:paperId', (req, res) => {
+  const { paperId } = req.params;
+  const sql = 'SELECT title FROM ResearchPapers WHERE id = ?';
+  
+  db.query(sql, [paperId], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) return res.status(404).json({ error: 'Paper not found' });
+    res.json(results[0]);
+  });
+});
+
+
+// attehcment here=======================================================================
+app.get('/download-attachment/:paperId', (req, res) => {
+  const { paperId } = req.params;
+  const sql = `SELECT attachmentPath FROM ResearchPapers WHERE id = ?`;
+
+  db.query(sql, [paperId], (err, result) => {
+    if (err) {
+      console.error('Database Error:', err);
+      return res.status(500).json({ error: 'Database error! Please try again later.' });
+    }
+
+    if (result.length === 0 || !result[0].attachmentPath) {
+      return res.status(404).json({ error: 'Attachment not found!' });
+    }
+
+    const filePath = result[0].attachmentPath;
+
+    // MIME Type set karna (PDF ke liye "application/pdf")
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.setHeader("Content-Disposition", `attachment; filename="${filePath.split('/uploads').pop()}"`);
+    
+    res.download(filePath, (err) => {
+      if (err) {
+        console.error("File Download Error:", err);
+        res.status(500).json({ error: "File download failed!" });
+      }
+    });
+  });
+});
+
+
+
+// app.get('/get-paper-details/:paperId', (req, res) => {
+//   const { paperId } = req.params;
+
+//   const sql = `SELECT suggestedEditors, submissionTime FROM ResearchPapers WHERE id = ?`;
+//   db.query(sql, [paperId], (err, paperResult) => {
+//     if (err) {
+//       return res.status(500).json({ error: err.message });
+//     }
+
+//     if (!paperResult || paperResult.length === 0) {
+//       return res.status(404).json({ error: "Paper not found" });
+//     }
+
+//     const attachmentSql = `SELECT name, url FROM Attachments WHERE paperId = ?`;
+//     db.query(attachmentSql, [paperId], (err, attachmentResult) => {
+//       if (err) {
+//         return res.status(500).json({ error: err.message });
+//       }
+
+//       res.status(200).json({
+//         suggestedEditors: paperResult[0]?.suggestedEditors || "N/A", 
+//         submissionTime: paperResult[0]?.submissionTime || "N/A", 
+//         attachments: attachmentResult || []
+//       });
+//     });
+//   });
+// });
+
 
 
 // Start Server==================================================================

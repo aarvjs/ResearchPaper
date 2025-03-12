@@ -82,15 +82,6 @@ const JournalGuidelines = () => {
           <strong>NoDerivatives:</strong> If you remix, transform, or build upon the material, you may not distribute the modified material.
         </li>
       </ul>
-
-
-
-
-
-
-
-      
-
       <h2 style={subheadingStyle}>Copyright Transfers</h2>
       <p style={paragraphStyle}>
         Any usage rights are regulated through the Creative Commons Attribution-NoDerivatives 4.0 (CC BY-ND 4.0). For any purposes, anyone is free to copy and distribute the article as long as the original author is credited and provided that the article is not altered or modified (see above).
