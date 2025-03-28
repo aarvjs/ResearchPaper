@@ -127,64 +127,63 @@ function ResearchPaperSubmit() {
   // Submit Paper
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!selectedFile) {
       alert("Please select a file first!");
       return;
     }
-
+  
     if (authorsList.length === 0) {
       alert("Please add at least one author.");
       return;
     }
-
+  
+    const token = localStorage.getItem("token"); // ✅ Token get karo
+    if (!token) {
+      alert("You must be logged in to submit a paper!");
+      return;
+    }
+  
     const form = new FormData();
     form.append("title", formData.title);
     form.append("msccode", formData.msccode);
     form.append("attachment", selectedFile);
     form.append("suggestedEditors", selectedEditors.join(", "));
     form.append("message", formData.message);
-
+  
     try {
-      // Submit Paper=========================================
       const paperResponse = await axios.post("http://localhost:5000/submit-paper", form, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { 
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}` // ✅ Token include karo
+        },
       });
-
-      // Submit Authors==========================================================
+  
+      // Submit Authors
       await axios.post("http://localhost:5000/add-authors", {
         paperId: paperResponse.data.paperId,
         authors: authorsList,
+      },{
+        headers: { Authorization: `Bearer ${token}` } // ✅ Token authors API me bhi send karo
       });
-
       // Reset Form
       setFormData({
         title: "",
         msccode: "",
         message: "",
-        firstName: "",
-        middleName: "",
-        lastName: "",
-        gender: "",
-        correspondingAuthor: "No",
-        institution: "",
-        email: "",
-        orcid: "",
-        address: "",
-        country: "",
       });
-
+  
       setSelectedFile(null);
       setAuthorsList([]);
       setSelectedEditors([]);
-
+  
       alert("Submission successful!");
     } catch (error) {
-      // console.error("Error:", error.response?.data || error.message);
-      // alert(Submission fail: `${error.response?.data?.error || "Server error"}`);
-      alert("Submission fail");
+      console.error("Error:", error.response?.data || error.message);
+      alert(`Submission failed: ${error.response?.data?.error || "Server error"}`);
     }
   };
+  
 
   // Handle Editor Selection==========================================
   const handleCheckboxChange = (editor) => {
@@ -337,7 +336,7 @@ function ResearchPaperSubmit() {
           />
         </div>
 
-        {/* Suggested Editors Section */}
+        {/* Suggested Editors Section ==========================================================================*/}
         <div
           style={{
             maxWidth: "500px",
@@ -387,7 +386,7 @@ function ResearchPaperSubmit() {
           ))}
         </div>
 
-        {/* Message Field */}
+        {/* Message Field */}============================================================================================
         <div style={{ marginBottom: "15px" }}>
           <label
             style={{

@@ -31,18 +31,7 @@ import AdminPapers from './pages/AdminPapers';
 
 
 const App = () => {
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [userData, setUserData] = useState(null);
-
-  // const handleLoginSuccess = (user) => {
-  //   setIsLoggedIn(true);
-  //   setUserData(user);
-  // };
-
-  // const handleLogout = () => {
-  //   setIsLoggedIn(false);
-  //   setUserData(null);
-  // };
+ 
   return (
     <Router>
       {/* Header and Navbar */}

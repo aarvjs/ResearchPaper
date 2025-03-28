@@ -5,22 +5,54 @@ const SubmittedArticle = () => {
   const [papers, setPapers] = useState([]);
   const [error, setError] = useState(null);
 
+ 
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token"); // Token fetch karo
+  
+  //   fetch("http://localhost:5000/get-papers", {
+  //     method: "GET",
+  //     headers: {
+  //       "Authorization": `Bearer ${token}`, // Token bhejo
+  //       "Content-Type": "application/json"
+  //     }
+  //   })
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         throw new Error("Network response was not ok");
+  //       }
+  //       return response.json();
+  //     })
+  //     .then((data) => {
+  //       setPapers(data);
+  //     })
+  //     .catch((error) => {
+  //       setError(error.message);
+  //       console.error("Error fetching papers:", error);
+  //     });
+  // }, []);
+
   useEffect(() => {
-    fetch('http://localhost:5000/get-papers')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
+    const token = localStorage.getItem("token");
+  
+    fetch("http://localhost:5000/get-papers", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
       .then((data) => {
-        setPapers(data);
+        if (Array.isArray(data)) { // Ensure it's an array
+          setPapers(data);
+        } else {
+          setPapers([]); // Fallback to an empty array
+        }
       })
-      .catch((error) => {
-        setError(error.message);
-        console.error('Error fetching papers:', error);
-      });
+      .catch((error) => console.error("Error fetching papers:", error));
   }, []);
+  
+  
 
 
   const downloadFile = async (paperId) => {

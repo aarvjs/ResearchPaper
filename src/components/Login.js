@@ -156,14 +156,44 @@ const Login = () => {
   };
 
   // Handle Login Submission=================================================================================
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  
+  //   try {
+  //     const response = await fetch('http://localhost:5000/login', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ username, password }),
+  //     });
+  
+  //     const data = await response.json();
+  
+  //     if (response.status === 200) {
+  //       localStorage.setItem('user', JSON.stringify(data.user));
+  //       // localStorage.setItem("email", data.user.email); 
+  //       setUser(data.user);
+  //       navigate('/profile-page');
+  //       alert(data.message);
+  //     } else {
+  //       alert(data.message);
+  //     }
+  //   } catch (err) {
+  //     console.error('Login error:', err);
+  //     alert('Something went wrong. Please try again later.');
+  //   }
+  // };
+  
+
   const handleLogin = async (e) => {
     e.preventDefault();
   
     try {
-      const response = await fetch('http://localhost:5000/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ username, password }),
       });
@@ -171,16 +201,17 @@ const Login = () => {
       const data = await response.json();
   
       if (response.status === 200) {
-        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);  // ✅ Token store karna
         setUser(data.user);
-        navigate('/profile-page');
+        navigate("/profile-page");
         alert(data.message);
       } else {
         alert(data.message);
       }
     } catch (err) {
-      console.error('Login error:', err);
-      alert('Something went wrong. Please try again later.');
+      console.error("Login error:", err);
+      alert("Something went wrong. Please try again later.");
     }
   };
   
@@ -188,6 +219,9 @@ const Login = () => {
   // Handle Logout
   const handleLogout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    // localStorage.removeItem('users');
+    // localStorage.removeItem('user_id');
     setUser(null);
     navigate('/');
     alert('You have been logged out.');
