@@ -225,12 +225,43 @@ db.query(`
 `);
 
 // API Endpoints
+app.post('/submit-paper', verifyToken, upload.single('attachment'), (req, res) => {
+  console.log("Decoded User:", req.user); 
 
-// Submit Research Paper=======================================================================================
+  const { title, msccode, suggestedEditors, message } = req.body;
+  const attachmentPath = req.file?.path;
+  const userId = req.user.id; 
+
+  if (!title || !msccode) {
+    return res.status(400).json({ error: 'Title and MSC Code are required!' });
+  }
+
+  // ✅ Ensure Suggested Editors are Trimmed
+  const parsedEditors = JSON.parse(suggestedEditors).map(name => name.trim());
+
+  const sql = `INSERT INTO ResearchPapers (title, attachmentPath, msccode, suggestedEditors, message, userId) 
+               VALUES (?, ?, ?, ?, ?, ?)`;
+
+  db.query(sql, [title, attachmentPath, msccode, JSON.stringify(parsedEditors), message, userId], (err, result) => {
+    if (err) {
+      console.error('Database Error:', err);
+      return res.status(500).json({ error: 'Database error! Please try again later.' });
+    }
+    res.status(201).json({ 
+      message: 'Paper submitted successfully', 
+      paperId: result.insertId 
+    });
+  });
+});
+
+
+
 // app.post('/submit-paper', verifyToken, upload.single('attachment'), (req, res) => {
+//   console.log("Decoded User:", req.user); 
+
 //   const { title, msccode, suggestedEditors, message } = req.body;
 //   const attachmentPath = req.file?.path;
-//   const userId = req.user.id; // From authenticated middleware
+//   const userId = req.user.id; 
 
 //   if (!title || !msccode) {
 //     return res.status(400).json({ error: 'Title and MSC Code are required!' });
@@ -238,6 +269,7 @@ db.query(`
 
 //   const sql = `INSERT INTO ResearchPapers (title, attachmentPath, msccode, suggestedEditors, message, userId) 
 //                VALUES (?, ?, ?, ?, ?, ?)`;
+
 //   db.query(sql, [title, attachmentPath, msccode, suggestedEditors, message, userId], (err, result) => {
 //     if (err) {
 //       console.error('Database Error:', err);
@@ -250,34 +282,47 @@ db.query(`
 //   });
 // });
 
-app.post('/submit-paper', verifyToken, upload.single('attachment'), (req, res) => {
-  console.log("Decoded User:", req.user); 
+// get paper in admin==========================================================
+app.get('/get-paperss', verifyToken, (req, res) => {
+  console.log("Decoded User:", req.user);
 
-  const { title, msccode, suggestedEditors, message } = req.body;
-  const attachmentPath = req.file?.path;
-  const userId = req.user.id; 
+  // ✅ Mapping: Username -> Full Name
+  const editorMapping = {
+    "DiveshSrivastava": "Dr. Divesh Srivastava",
+    "WaseemAKhan": "Dr. Waseem A Khan",
+    "AnubhavSony": "Dr. Anubhav Sony",
+    "MohdShuaibSiddiqui": "Dr. Mohd Shuaib Siddiqui",
+    "RameshSinghGautam": "Dr. Ramesh Singh Gautam",
+    "BeenooSingh": "Mr. Beenoo Singh",
+    "MohdGhayasuddin": "Dr. Mohd Ghayasuddin",
+    "HibaHaroon": "Dr. Hiba Haroon",
+    "KGChaubey": "Dr. KG Chaubey",
+    "RahulRanjanTiwari": "Dr. Rahul Ranjan Tiwari",
+    "ToukeerKhan": "Dr. Taueer Khan",
+    "MohdRashid": "Dr. Mohd Rashid",
+    "FarhadIlahiBakhsh": "Dr. Farhad Ilahi Bakshi",
+    "TouheedKhan": "Mr. Touheed Khan"
+};
 
-  if (!title || !msccode) {
-    return res.status(400).json({ error: 'Title and MSC Code are required!' });
-  }
+  const editorFullName = editorMapping[req.user.username] || req.user.username;
+  console.log("Mapped Editor Name for Query:", editorFullName);
 
-  const sql = `INSERT INTO ResearchPapers (title, attachmentPath, msccode, suggestedEditors, message, userId) 
-               VALUES (?, ?, ?, ?, ?, ?)`;
+  const sql = `SELECT * FROM ResearchPapers WHERE JSON_CONTAINS(suggestedEditors, JSON_QUOTE(?), '$')`;
 
-  db.query(sql, [title, attachmentPath, msccode, suggestedEditors, message, userId], (err, result) => {
+  db.query(sql, [editorFullName], (err, results) => {
     if (err) {
       console.error('Database Error:', err);
       return res.status(500).json({ error: 'Database error! Please try again later.' });
     }
-    res.status(201).json({ 
-      message: 'Paper submitted successfully', 
-      paperId: result.insertId 
-    });
+
+    console.log("Fetched Papers from DB:", results);
+    res.status(200).json(results);
   });
 });
 
-// Add Authors==========================================================
 
+
+// add auhtor paper ==============================================================================================
 app.post('/add-authors', verifyToken, (req, res) => {
   const { authors, paperId } = req.body;
   const userId = req.user.id;

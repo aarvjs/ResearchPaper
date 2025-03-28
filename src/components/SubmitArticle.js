@@ -148,7 +148,9 @@ function ResearchPaperSubmit() {
     form.append("title", formData.title);
     form.append("msccode", formData.msccode);
     form.append("attachment", selectedFile);
-    form.append("suggestedEditors", selectedEditors.join(", "));
+    // form.append("suggestedEditors", selectedEditors.join(", "));
+    // form.append("suggestedEditors", JSON.stringify(selectedEditors)); 
+    form.append("suggestedEditors", JSON.stringify(selectedEditors));
     form.append("message", formData.message);
   
     try {
